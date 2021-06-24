@@ -28,13 +28,14 @@ def arithmetic_arranger(problems: list, include_solution: bool = False) -> str:
 			raise ValueError("Error: Operator must be '+' or '-'.")
 		
 		probl_lines = [
-			first_number if int(first_number)>int(second_number) else second_number,
+			first_number,
 			operator,
-			first_number if int(first_number)<int(second_number) else second_number
+			second_number
 		]
 
 		# add the dashes
-		probl_lines.append(RESULT_DASHES*(len(probl_lines[0])+2))
+		longest_number = first_number if len(first_number)>len(second_number) else second_number
+		probl_lines.append(RESULT_DASHES*(len(longest_number)+2))
 
 		# add the result if asked for
 		if include_solution:
@@ -100,8 +101,4 @@ def arithmetic_arranger(problems: list, include_solution: bool = False) -> str:
 	arranged_problems = "\n".join(rows)
 
 	return arranged_problems
-
-
-print(arithmetic_arranger(["32 + 698", "3801 - 2", "45 + 43", "123 + 49"]))
-print(arithmetic_arranger(["32 + 698", "3801 - 2", "45 + 43", "123 + 49"], True))
 
