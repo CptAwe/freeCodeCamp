@@ -6,14 +6,14 @@ class Category:
         self.ledger = []
         self.name = name
     
-    def get_withdrawls(self):
-        """Gets the total amount that was withdrawled"""
-        withdrawls = 0
+    def get_withdrawals(self):
+        """Gets the total amount that was withdrawn"""
+        withdrawals = 0
         for transaction in self.ledger:
             amount = transaction["amount"]
             if amount < 0:
-                withdrawls += abs(amount)
-        return withdrawls
+                withdrawals += abs(amount)
+        return withdrawals
     
     def deposit(self, amount, description: str = ""):
         """Makes a deposit"""
@@ -23,10 +23,10 @@ class Category:
         )
     
     def withdraw(self, amount, description: str = "") -> bool:
-        """Makes a withdrawl"""
-        withdrawl_amount = -abs(amount)
-        if self.check_funds(withdrawl_amount):
-            self.ledger.append({"amount" : withdrawl_amount, "description": description})
+        """Makes a withdrawal"""
+        withdrawal_amount = -abs(amount)
+        if self.check_funds(withdrawal_amount):
+            self.ledger.append({"amount" : withdrawal_amount, "description": description})
             return True
         return False
     
@@ -47,7 +47,7 @@ class Category:
         return False
     
     def check_funds(self, amount):
-        """Checks if there are enough money left to withdrawl the amount"""
+        """Checks if there are enough money left to withdraw from the amount"""
         if abs(amount)>self.get_balance(): return False
         else: return True
     
@@ -70,27 +70,32 @@ def create_spend_chart(categories: list):
     BAR = "o"
     TITLE = "Percentage spent by category"
     
-    withdrawls = {}
-    names = []
+    # Sum up the total withdrawn amount
+    withdrawals = {}
+    total_amount_withdrawn = 0
     for category in categories:
-        amount = category.get_withdrawls()
+        amount = category.get_withdrawals()
+        withdrawals[category.name] = {"amount" : amount, "percentage" : 0}
+        total_amount_withdrawn += amount
+    
+    # Calculate the percentages
+    for category_name in withdrawals:
+        percentage = withdrawals[category_name]["amount"]/total_amount_withdrawn*100
         # Why use floor() instead of int():
         # https://stackoverflow.com/a/31195540
-        amount = int(floor(amount/10.)*10)
-        withdrawls[category.name] = amount
-    
-        names.append([letter for letter in category.name])
+        percentage = int(floor(percentage/10.)*10)
+        withdrawals[category_name]["percentage"] = percentage
 
     # Make the bars
     percentages_lines = []
     for percentage in range(100, -10, -10):
         percentages_line = "{:3}|".format(percentage)
-        for category_name in withdrawls:
-            if withdrawls[category_name] >= percentage:
+        for category_name in withdrawals:
+            if withdrawals[category_name]["percentage"] >= percentage:
                 percentages_line += " " + BAR + " "
             else:
                 percentages_line += "   "
-        percentages_lines.append(percentages_line)
+        percentages_lines.append(percentages_line + " ")
 
     # Make the horizontal line
     horizontal_line = "    {}".format("---"*len(categories) + "-")
@@ -98,15 +103,15 @@ def create_spend_chart(categories: list):
     # Make the names
     bar_names_lines = []
     # find the length of the longest name
-    max_name_len = max([len(name) for name in withdrawls])
+    max_name_len = max([len(name) for name in withdrawals])
     for line_num in range(max_name_len):
         bar_names_line = "    "
-        for category_name in withdrawls:
+        for category_name in withdrawals:
             if line_num < len(category_name):
                 bar_names_line += " " + category_name[line_num] + " "
             else:
                 bar_names_line += "   "
-        bar_names_lines.append(bar_names_line)
+        bar_names_lines.append(bar_names_line + " ")
 
     chart_lines = [TITLE] + percentages_lines + [horizontal_line] + bar_names_lines
 
