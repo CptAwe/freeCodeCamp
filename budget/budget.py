@@ -64,5 +64,52 @@ class Category:
         
         return "\n".join(output)
 
-def create_spend_chart(categories):
-    pass
+def create_spend_chart(categories: list):
+    """Creates a rudimentary bar chart"""
+
+    BAR = "o"
+    TITLE = "Percentage spent by category"
+    
+    withdrawls = {}
+    names = []
+    for category in categories:
+        amount = category.get_withdrawls()
+        # Why use floor() instead of int():
+        # https://stackoverflow.com/a/31195540
+        amount = int(floor(amount/10.)*10)
+        withdrawls[category.name] = amount
+    
+        names.append([letter for letter in category.name])
+
+    # Make the bars
+    percentages_lines = []
+    for percentage in range(100, -10, -10):
+        percentages_line = "{:3}|".format(percentage)
+        for category_name in withdrawls:
+            if withdrawls[category_name] >= percentage:
+                percentages_line += " " + BAR + " "
+            else:
+                percentages_line += "   "
+        percentages_lines.append(percentages_line)
+
+    # Make the horizontal line
+    horizontal_line = "    {}".format("---"*len(categories) + "-")
+    
+    # Make the names
+    bar_names_lines = []
+    # find the length of the longest name
+    max_name_len = max([len(name) for name in withdrawls])
+    for line_num in range(max_name_len):
+        bar_names_line = "    "
+        for category_name in withdrawls:
+            if line_num < len(category_name):
+                bar_names_line += " " + category_name[line_num] + " "
+            else:
+                bar_names_line += "   "
+        bar_names_lines.append(bar_names_line)
+
+    chart_lines = [TITLE] + percentages_lines + [horizontal_line] + bar_names_lines
+
+    chart_lines = "\n".join(chart_lines)
+
+    return chart_lines
